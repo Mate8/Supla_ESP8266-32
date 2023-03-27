@@ -1,0 +1,47 @@
+  //Select menu (custom HTML)
+  // The custom html options do not get handled the same way as other standard ones
+  // but im using some javascript trickery here to save the output of the drop down
+  // into a standard WM field that im hiding
+  // Not sure if it's better or worse than the standard way
+
+  int day = 3;
+  char * daysOfWeek[] = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+
+  const char* day_select_str = R"(
+  <br/><label for='day'>Custom Field Label</label>
+  <select name="dayOfWeek" id="day" onchange="document.getElementById('key_custom').value = this.value">
+    <option value="0">Monday</option>
+    <option value="1">Tuesday</option>
+    <option value="2">Wednesday</option>
+    <option value="3">Thursday</option>
+    <option value="4">Friday</option>
+    <option value="5">Saturday</option>
+    <option value="6">Sunday</option>
+  </select>
+  <script>
+    document.getElementById('day').value = "%d";
+    document.querySelector("[for='key_custom']").hidden = true;
+    document.getElementById('key_custom').hidden = true;
+  </script>
+  )";
+
+  char bufferStr[700];
+  // The sprintf is so we can input the value of the current selected day
+  // If you dont need to do that, then just pass the const char* straight in.
+  sprintf(bufferStr, day_select_str, day);
+
+  Serial.print(bufferStr);
+  
+  WiFiManagerParameter custom_field(bufferStr);
+  sprintf(convertedValue, "%d", day); // Need to convert to string to display a default value.
+
+  WiFiManagerParameter custom_hidden("key_custom", "Will be hidden", convertedValue, 2);
+
+  wm.addParameter(&custom_hidden);
+  wm.addParameter(&custom_field);
+
+  // Do your autoConnect or whatever here
+
+  day = atoi(custom_hidden.getValue());
+  Serial.print("Selected Day: ");
+  Serial.println(daysOfWeek[day]);
